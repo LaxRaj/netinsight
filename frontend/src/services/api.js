@@ -4,7 +4,8 @@ import axios from "axios";
 const API = axios.create({ baseURL: "/" });
 
 export function fetchZscore(threshold = 3.0) {
-  return API.get(`/api/anomalies/zscore?threshold=${threshold}`)
+  return API
+    .get(`/api/anomalies/zscore?threshold=${threshold}`)
     .then(res => res.data);
 }
 

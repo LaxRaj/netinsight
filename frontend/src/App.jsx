@@ -2,24 +2,27 @@ import React, { useEffect, useState } from "react";
 import { fetchZscore, fetchClusters } from "./services/api.js";
 import AnomalyChart from "./components/AnomalyChart";
 import ClusterScatter from "./components/ClusterScatter";
+import "./App.css";
 
 export default function App() {
-  // control states
   const [threshold, setThreshold] = useState(1.5);
   const [numClusters, setNumClusters] = useState(4);
-
-  // data states
   const [anomalies, setAnomalies] = useState([]);
   const [clusters, setClusters] = useState({ data: [], centers: [] });
 
-  // fetch anomalies when threshold changes
   useEffect(() => {
+    console.log("⏳ Fetching anomalies with threshold:", threshold);
     fetchZscore(threshold)
-      .then(setAnomalies)
-      .catch(() => setAnomalies([]));
+      .then(data => {
+        console.log("✅ Received anomalies:", data);
+        setAnomalies(data);
+      })
+      .catch(err => {
+        console.error("❌ Error fetching anomalies:", err);
+        setAnomalies([]);
+      });
   }, [threshold]);
 
-  // fetch clusters when numClusters changes
   useEffect(() => {
     fetchClusters(numClusters)
       .then(setClusters)
@@ -27,16 +30,16 @@ export default function App() {
   }, [numClusters]);
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1 style={{ marginBottom: "1rem" }}>NetInsight Dashboard</h1>
+    <div className="container">
+      <header className="header">
+        <h1>NetInsight Dashboard</h1>
+      </header>
 
-      {/* Controls */}
-      <div style={{ marginBottom: "2rem", display: "flex", gap: "2rem" }}>
-        <div>
+      <div className="controls">
+        <div className="control-card">
           <label>
-            Z-Score Threshold: <strong>{threshold.toFixed(1)}</strong>
+            Z‐Score Threshold: <strong>{threshold.toFixed(1)}</strong>
           </label>
-          <br />
           <input
             type="range"
             min="0.5"
@@ -47,33 +50,38 @@ export default function App() {
           />
         </div>
 
-        <div>
+        {/* Show how many anomalies we’ve got */}
+        <p style={{ marginBottom: "1rem", color: "#555" }}>
+          {anomalies.length > 0
+            ? `${anomalies.length} anomaly${anomalies.length > 1 ? "ies" : ""} detected`
+            : `No anomalies at threshold ≥ ${threshold.toFixed(1)}`}
+        </p>
+
+        <div className="control-card">
           <label>
             Number of Clusters: <strong>{numClusters}</strong>
           </label>
-          <br />
           <input
             type="number"
             min="1"
             max="10"
-            step="1"
             value={numClusters}
             onChange={e => setNumClusters(parseInt(e.target.value) || 1)}
           />
         </div>
       </div>
 
-      {/* Anomalies Chart */}
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Anomalies (Z-Score ≥ {threshold.toFixed(1)})</h2>
-        <AnomalyChart data={anomalies} />
-      </section>
+      <div className="cards">
+        <section className="card">
+          <h2>Anomalies (Z ≥ {threshold.toFixed(1)})</h2>
+          <AnomalyChart data={anomalies} />
+        </section>
 
-      {/* Clusters Scatter */}
-      <section>
-        <h2>Traffic Clusters (KMeans: {numClusters} groups)</h2>
-        <ClusterScatter data={clusters.data} centers={clusters.centers} />
-      </section>
+        <section className="card">
+          <h2>Traffic Clusters ({numClusters} groups)</h2>
+          <ClusterScatter data={clusters.data} centers={clusters.centers} />
+        </section>
+      </div>
     </div>
   );
 }

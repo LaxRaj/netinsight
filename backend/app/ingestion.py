@@ -13,8 +13,8 @@ def generate_mock_data(path: str, n: int = 1000):
     for i in range(n):
         ts = (start + timedelta(seconds=60*i)).isoformat()
         # Inject a few outliers
-        if random.random() < 0.02:
-            b = random.randint(50000, 100000)
+        if random.random() < 0.10:
+            b = random.randint(50000, 200000)
         else:
             b = random.randint(100, 10000)
         rows.append({
